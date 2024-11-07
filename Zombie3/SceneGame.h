@@ -20,12 +20,15 @@ public:
 	{
 		Awake,
 		Game,
+		Upgrade,
 		GameOver,
 		Pause,
+		None,
 	};
 
 protected:
 	Status currentStatus = Status::Awake;
+	Status beforeStatus = Status::None;
 
 	TileMap* map;
 	Player* player;
@@ -47,7 +50,11 @@ protected:
 	sf::Sprite cursor;
 
 	int score = 0;
-	int hp = 1.f;
+	int hp = 100;
+	int maxHp = 100;
+
+	int wave;
+	bool waveStart;
 
 	int second = 0;
 
@@ -64,6 +71,7 @@ public:
 
 	void UpdateAwake(float dt);
 	void UpdateGame(float dt);
+	void UpdateUpgrade(float dt);
 	void UpdateGameOver(float dt);
 	void UpdatePause(float dt);
 
@@ -86,4 +94,7 @@ public:
 	void SetScore(int score);
 	void SetHp(int hp);
 	void SetTime(int s);
+
+	int GetScore() { return score; }
+	int GetHp() { return hp; }
 };
