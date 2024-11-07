@@ -66,6 +66,19 @@ void Player::Reset()
 	direction = { 1.f, 0.f };
 
 	shootTimer = shootDelay;
+
+	sceneGame = dynamic_cast<SceneGame*>(SCENE_MGR.GetCurrentScene());
+	hp = maxHp = 100;
+	gunAmmo = 50;
+
+	invincible = false;
+
+	moveableBounds = sceneGame->GetMovableBounds();
+	body.setTexture(TEXTURE_MGR.Get(textureId), true);
+	SetOrigin(originPreset);
+	SetPosition({ 0.f, 0.f });
+	SetRotation(0.f);
+	direction = { 1.f, 0.f };
 }
 
 void Player::Update(float dt)
@@ -147,9 +160,11 @@ void Player::Reload()
 
 void Player::OnDamage(int d)
 {
-	hp -= d;
-	if (hp <= 0 && sceneGame != nullptr)
+	if (invincible == false)
 	{
-		sceneGame->OnPlayerDie(this);
+		hp = Utils::Clamp(hp - d, 0, maxHp);
+		invincible = true;
+		invincibleTimer = 0;
 	}
+	
 }

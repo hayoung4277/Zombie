@@ -75,6 +75,9 @@ public:
 
 	const std::list<Zombie*>& GetZombieList() const { return zombies; }
 
+	sf::FloatRect GetTileBounds();
+	sf::FloatRect GetMovableBounds();
+
 	void OnZombieDie(Zombie* zombie);
 	void OnPlayerDie(Player* player);
 

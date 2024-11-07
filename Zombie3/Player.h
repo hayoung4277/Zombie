@@ -12,14 +12,20 @@ protected:
 	sf::Vector2f look;
 
 	float speed = 500.f;
-	int gunAmmo = 10;
+	int gunAmmo = 100;
 
 	SceneGame* sceneGame;
 
 	float shootDelay = 0.5f;
 	float shootTimer = 0.f;
 
+	int maxHp = 100;
 	int hp = 0;
+
+	bool invincible;
+	float invincibleTimer;
+
+	sf::FloatRect moveableBounds;
 
 public:
 	Player(const std::string& name = "");

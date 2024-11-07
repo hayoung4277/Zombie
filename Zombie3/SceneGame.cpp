@@ -246,6 +246,16 @@ void SceneGame::ReturnBullet(Bullet* bullet)
 	bullets.remove(bullet);
 }
 
+sf::FloatRect SceneGame::GetTileBounds()
+{
+	return map->GetGlobalBounds();;
+}
+
+sf::FloatRect SceneGame::GetMovableBounds()
+{
+	return map->GetMapBounds();
+}
+
 void SceneGame::OnZombieDie(Zombie* zombie)
 {
 	RemoveGo(zombie);
