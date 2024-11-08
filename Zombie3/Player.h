@@ -12,12 +12,16 @@ protected:
 	sf::Vector2f look;
 
 	float speed = 500.f;
-	int gunAmmo = 100;
+	/*int gunAmmo = 10;
+	int gunMaxAmmo = 200;
+	int gunUseCount = 0;*/
+
+	bool isShoot = false;
 
 	SceneGame* sceneGame;
 
-	float shootDelay = 0.5f;
-	float shootTimer = 0.f;
+	/*float shootDelay = 0.5f;
+	float shootTimer = 0.f;*/
 
 	int maxHp = 100;
 	int hp = 0;
@@ -47,8 +51,11 @@ public:
 
 	sf::Sprite GetSprite() { return body; }
 
+	bool IsShoot();
 	void Shoot();
-	void Reload();
+	/*void Reload();*/
+	/*int GetGunAmmo() { return gunAmmo; }
+	int GetGunMaxAmmo() { return gunMaxAmmo; }*/
 
 	void OnDamage(int d);
 };

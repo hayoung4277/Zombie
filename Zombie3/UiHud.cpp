@@ -143,7 +143,8 @@ void UiHud::SetHiScore(int s)
 void UiHud::SetAmmo(int current, int total)
 {
 	current = 10;
-	textAmmo.setString(std::to_string(current) + " / 10 (R)");
+	total = 200;
+	textAmmo.setString(std::to_string(current) + " / " + std::to_string(total) + " (R)");
 	Utils::SetOrigin(textAmmo, Origins::BL);
 }
 

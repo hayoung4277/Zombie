@@ -8,6 +8,7 @@
 #include "UiUpgrade.h"
 #include "UiGameOver.h"
 #include "UiGameStart.h"
+#include <fstream>
 
 SceneGame::SceneGame()
 	: Scene(SceneIds::Game)
@@ -170,6 +171,7 @@ void SceneGame::UpdateGame(float dt)
 	uiHud->SetZombieCount(zombies.size());
 	uiHud->SetWave(wave);
 	uiHud->SetHp(hp, maxHp);
+	uiHud->SetAmmo(gunAmmo, gunMaxAmmo);
 	if (zombies.size() == 0) {
 		waveStart = true;
 		wave++;
@@ -185,6 +187,33 @@ void SceneGame::UpdateGame(float dt)
 	if (GetScore() != 0 && GetScore() % 5000 == 0)
 	{
 		SetStatus(Status::Upgrade);
+	}
+
+	shootTimer += dt;
+
+	if (gunAmmo != 0)
+	{
+		if (shootTimer > shootDelay && InputMgr::GetMouseButton(sf::Mouse::Left))
+		{
+			shootTimer = 0.f;
+			player->Shoot();
+			gunAmmo--;
+			gunUseCount++;
+		}
+	}
+
+	if (InputMgr::GetKeyDown(sf::Keyboard::R))
+	{
+		if (gunAmmo == 0)
+		{
+			gunMaxAmmo - gunUseCount;
+			Reload();
+		}
+		else if (gunAmmo != 0)
+		{
+			gunMaxAmmo - gunUseCount;
+			Reload();
+		}
 	}
 }
 
@@ -203,6 +232,7 @@ void SceneGame::UpdateGameOver(float dt)
 	{
 		SetStatus(Status::Game);
 	}
+	SaveHighScore();
 }
 
 void SceneGame::UpdatePause(float dt)
@@ -225,6 +255,8 @@ void SceneGame::SetStatus(Status newStatus)
 		score = 0;
 		SetScore(score);
 		uiGameStart->SetActive(true);
+		gunAmmo = 10;
+		gunMaxAmmo = 200;
 		break;
 
 	case SceneGame::Status::Game:
@@ -237,6 +269,7 @@ void SceneGame::SetStatus(Status newStatus)
 			second = 0;
 
 			SetScore(score);
+			SetAmmo(gunAmmo, gunMaxAmmo);
 			player->Reset();
 		}
 		FRAMEWORK.SetTimeScale(1.f);
@@ -306,6 +339,11 @@ void SceneGame::OnZombieDie(Zombie* zombie)
 	zombiePool.Return(zombie);
 	zombies.remove(zombie);
 	SetScore(score + 100);
+	if (maxScore < score)
+	{
+		maxScore = score;
+	}
+	SetHighScore(maxScore);
 }
 
 void SceneGame::OnPlayerDie(Player* player)
@@ -325,6 +363,12 @@ void SceneGame::SetScore(int score)
 	uiHud->SetScore(this->score);
 }
 
+void SceneGame::SetHighScore(int score)
+{
+	this->score = score;
+	uiHud->SetHiScore(this->score);
+}
+
 void SceneGame::SetHp(int hp)
 {
 	this->hp = hp;
@@ -336,4 +380,30 @@ void SceneGame::SetTime(int s)
 	second = s;
 
 	uiHud->SetTime(second);
+}
+
+void SceneGame::SetAmmo(int current, int total)
+{
+	gunAmmo = current;
+	gunMaxAmmo = total;
+
+	uiHud->SetAmmo(gunAmmo, gunMaxAmmo);
+}
+
+void SceneGame::Reload()
+{
+	gunAmmo = 10;
+}
+
+void SceneGame::SaveHighScore()
+{
+	/*std::ofstream os("HighScore.dat", std::ofstream::binary);
+	if (!os)
+	{
+		std::cerr << "Err!" << std::endl;
+		exit(1);
+	}
+
+	is.write((char*)maxScore, sizeof(maxScore));
+	is.close();*/
 }

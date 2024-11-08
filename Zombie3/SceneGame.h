@@ -47,8 +47,16 @@ protected:
 	sf::Sprite cursor;
 
 	int score = 0;
+	int maxScore = 0;
 	int hp = 100;
 	int maxHp = 100;
+
+	int gunAmmo = 10;
+	int gunMaxAmmo = 200;
+	int gunUseCount = 0;
+
+	float shootDelay = 0.5f;
+	float shootTimer = 0.f;
 
 	int wave;
 	bool waveStart;
@@ -89,9 +97,15 @@ public:
 	void OnUpgrade(Upgrade up);
 
 	void SetScore(int score);
+	void SetHighScore(int score);
 	void SetHp(int hp);
 	void SetTime(int s);
+	void SetAmmo(int current, int total);
 
 	int GetScore() { return score; }
 	int GetHp() { return hp; }
+
+	void Reload();
+
+	void SaveHighScore();
 };

@@ -65,11 +65,11 @@ void Player::Reset()
 	SetRotation(0.f);
 	direction = { 1.f, 0.f };
 
-	shootTimer = shootDelay;
+	//shootTimer = shootDelay;
 
 	sceneGame = dynamic_cast<SceneGame*>(SCENE_MGR.GetCurrentScene());
 	hp = maxHp = 100;
-	gunAmmo = 50;
+	//gunAmmo = 50;
 
 	invincible = false;
 
@@ -88,7 +88,7 @@ void Player::Update(float dt)
 	float mag = Utils::Magnitude(direction);
 	if (mag > 1.f)
 	{
-		 Utils::Normailize(direction);
+		Utils::Normailize(direction);
 	}
 
 	sf::Vector2i mousePos = InputMgr::GetMousePosition();
@@ -98,22 +98,32 @@ void Player::Update(float dt)
 	SetRotation(Utils::Angle(look));
 	SetPosition(position + direction * speed * dt);
 
-	shootTimer += dt;
-	
-	if(gunAmmo != 0)
+	/*shootTimer += dt;
+
+	if (gunAmmo != 0)
 	{
 		if (shootTimer > shootDelay && InputMgr::GetMouseButton(sf::Mouse::Left))
 		{
 			shootTimer = 0.f;
 			Shoot();
 			gunAmmo--;
+			gunUseCount++;
 		}
 	}
 
 	if (InputMgr::GetKeyDown(sf::Keyboard::R))
 	{
-		Reload();
-	}
+		if (gunAmmo == 0)
+		{
+			gunMaxAmmo - gunUseCount;
+			Reload();
+		}
+		else if (gunAmmo != 0)
+		{
+			gunMaxAmmo - gunUseCount;
+			Reload();
+		}
+	}*/
 }
 
 void Player::FixedUpdate(float dt)
@@ -135,7 +145,7 @@ void Player::FixedUpdate(float dt)
 			HitBox& boxZombie = zombie->GetHitBox();
 			if (Utils::CheckCollision(hitbox, boxZombie))
 			{
-			
+
 			}
 			break;
 		}
@@ -147,16 +157,21 @@ void Player::Draw(sf::RenderWindow& window)
 	window.draw(body);
 }
 
+bool Player::IsShoot()
+{
+	return isShoot;
+}
+
 void Player::Shoot()
 {
 	Bullet* bullet = sceneGame->TakeBullet();
 	bullet->Fire(position, look, 1000.f, 10);
 }
 
-void Player::Reload()
-{
-	gunAmmo = 10;
-}
+//void Player::Reload()
+//{
+//	gunAmmo = 10;
+//}
 
 void Player::OnDamage(int d)
 {
