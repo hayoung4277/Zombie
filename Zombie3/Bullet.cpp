@@ -104,7 +104,7 @@ void Bullet::FixedUpdate(float dt)
 			HitBox& boxZombie = zombie->GetHitBox();
 			if (Utils::CheckCollision(hitbox, boxZombie))
 			{
-				zombie->OnDamage(damage);
+				zombie->OnDamage(damage, dt);
 				sceneGame->ReturnBullet(this);
 			}
 			break;

@@ -32,6 +32,8 @@ void SceneGame::Release()
 
 void SceneGame::Enter()
 {
+	waveStart = true;
+
 	FRAMEWORK.GetWindow().setMouseCursorVisible(false);
 	cursor.setTexture(TEXTURE_MGR.Get("graphics/crosshair.png"));
 	Utils::SetOrigin(cursor, Origins::MC);
@@ -41,8 +43,16 @@ void SceneGame::Enter()
 	worldView.setSize(size);
 	worldView.setCenter(0.f, 0.f);
 
+
 	uiView.setSize(size);
 	uiView.setCenter(size.x * 0.5f, size.y * 0.5f);
+
+	score = 0;
+	wave = 1;
+
+	uiHud->SetWave(wave);
+	uiGameOver->SetActive(false);
+	uiUpgrade->SetActive(false);
 
 	Scene::Enter();
 
@@ -121,6 +131,9 @@ void SceneGame::Update(float dt)
 	case SceneGame::Status::Game:
 		UpdateGame(dt);
 		break;
+	case SceneGame::Status::Upgrade:
+		UpdateUpgrade(dt);
+		break;
 	case SceneGame::Status::GameOver:
 		UpdateGameOver(dt);
 		break;
@@ -156,7 +169,39 @@ void SceneGame::UpdateGame(float dt)
 		return;
 	}
 
+	if (waveStart == true) {
+		SpawnZombies(10 + 5 * wave);
+		waveStart = false;
+	}
+	uiHud->SetScore(score);
+	uiHud->SetZombieCount(zombies.size());
+	uiHud->SetWave(wave);
+	uiHud->SetHp(hp, maxHp);
+	if (zombies.size() == 0) {
+		waveStart = true;
+		wave++;
+	}
+
+	/*if (GetHp() < 0)
+	{
+		OnPlayerDie(player);
+	}*/
+
 	SetTime(second + 163.f * dt);
+
+	if (GetScore() != 0 && GetScore() % 5000 == 0)
+	{
+		SetStatus(Status::Upgrade);
+	}
+}
+
+void SceneGame::UpdateUpgrade(float dt)
+{
+	if (beforeStatus == Status::Game)
+	{
+		uiUpgrade->SetActive(true);
+		beforeStatus == Status::None;
+	}
 }
 
 void SceneGame::UpdateGameOver(float dt)
@@ -191,6 +236,8 @@ void SceneGame::SetStatus(Status newStatus)
 
 	case SceneGame::Status::Game:
 		uiGameStart->SetActive(false);
+		uiUpgrade->SetActive(false);
+		uiGameOver->SetActive(false);
 		if (prevStatus == Status::GameOver)
 		{
 			score = 0;
@@ -199,8 +246,12 @@ void SceneGame::SetStatus(Status newStatus)
 			SetScore(score);
 			player->Reset();
 		}
-		SpawnZombies(20);
 		FRAMEWORK.SetTimeScale(1.f);
+		break;
+
+	case SceneGame::Status::Upgrade:
+		FRAMEWORK.SetTimeScale(0.f);
+		uiUpgrade->SetActive(true);
 		break;
 
 	case SceneGame::Status::GameOver:

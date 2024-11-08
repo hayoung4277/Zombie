@@ -166,5 +166,4 @@ void Player::OnDamage(int d)
 		invincible = true;
 		invincibleTimer = 0;
 	}
-	
 }

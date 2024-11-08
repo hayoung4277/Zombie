@@ -68,11 +68,13 @@ void Zombie::Reset()
 	player = dynamic_cast<Player*>(SCENE_MGR.GetCurrentScene()->FindGo("Player"));
 	sceneGame = dynamic_cast<SceneGame*>(SCENE_MGR.GetCurrentScene());
 
-	body.setTexture(TEXTURE_MGR.Get(textureId));
+	body.setTexture(TEXTURE_MGR.Get(textureZombieId));
 	SetOrigin(Origins::MC);
 	SetPosition({ 0.f, 0.f });
 	SetRotation(0.f);
 	SetScale({ 1.f, 1.f });
+
+	attackTimer = 0;
 }
 
 void Zombie::Update(float dt)
@@ -99,33 +101,52 @@ void Zombie::SetType(Types type)
 	switch (this->type)
 	{
 	case Types::Bloater:
-		textureId = "graphics/bloater.png";
+		textureZombieId = "graphics/bloater.png";
 		maxHp = 50;
 		speed = 100.f;
 		damage = 20;
 		break;
 	case Types::Chaser:
-		textureId = "graphics/chaser.png";
+		textureZombieId = "graphics/chaser.png";
 		maxHp = 20;
 		speed = 75.f;
 		damage = 25;
 		break;
 	case Types::Crawler:
-		textureId = "graphics/crawler.png";
+		textureZombieId = "graphics/crawler.png";
 		maxHp = 10;
 		speed = 50.f;
 		damage = 30;
 		break;
 	}
-	body.setTexture(TEXTURE_MGR.Get(textureId), true);
+	body.setTexture(TEXTURE_MGR.Get(textureZombieId), true);
 	hp = maxHp;
 }
 
-void Zombie::OnDamage(int d)
+void Zombie::OnDamage(int d, float dt)
 {
 	hp -= d;
 	if (hp <= 0 && sceneGame != nullptr)
 	{
 		sceneGame->OnZombieDie(this);
+
+		/*body.setTexture(TEXTURE_MGR.Get(textureBloodId));
+		bloodTimer = 0;
+		bloodTimer += dt;
+		if(bloodTimer > bloodDuration)
+		{
+			sceneGame->OnZombieDie(this);
+		}*/
+	}
+}
+
+void Zombie::AttackUpdate(float dt)
+{
+	attackTimer += dt;
+	sf::Sprite playerSprite = player->GetSprite();
+	if (attackTimer > attackInterval && Utils::CheckCollision(body, playerSprite))
+	{
+		player->OnDamage(damage);
+		attackTimer = 0;
 	}
 }

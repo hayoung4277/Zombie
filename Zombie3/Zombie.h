@@ -18,7 +18,8 @@ public:
 protected:
 	Types type = Types::Bloater;
 	sf::Sprite body;
-	std::string textureId;
+	std::string textureZombieId = "graphics/bloater.png";
+	std::string textureBloodId = "graphics/blood.png";
 
 	sf::Vector2f direction;
 
@@ -29,6 +30,9 @@ protected:
 
 	int hp = 0;
 	float attackTimer = 0.f;
+
+	float bloodTimer;
+	float bloodDuration = 3.f;
 
 	Player* player = nullptr;
 	SceneGame* sceneGame = nullptr;
@@ -55,5 +59,7 @@ public:
 
 	void SetType(Types type);
 
-	void OnDamage(int damge);
+	void OnDamage(int damage, float dt);
+
+	void AttackUpdate(float dt);
 };

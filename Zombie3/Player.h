@@ -45,6 +45,8 @@ public:
 	void FixedUpdate(float dt) override;
 	void Draw(sf::RenderWindow& window) override;
 
+	sf::Sprite GetSprite() { return body; }
+
 	void Shoot();
 	void Reload();
 
