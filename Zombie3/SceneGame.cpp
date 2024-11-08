@@ -82,13 +82,6 @@ void SceneGame::Exit()
 	}
 	bullets.clear();
 
-	for (auto blood : bloods)
-	{
-		RemoveGo(blood);
-		bloodPool.Return(blood);
-	}
-	bloods.clear();
-
 	Scene::Exit();
 }
 
@@ -170,7 +163,7 @@ void SceneGame::UpdateGame(float dt)
 	}
 
 	if (waveStart == true) {
-		SpawnZombies(10 + 5 * wave);
+		SpawnZombies(10 + 10 * wave);
 		waveStart = false;
 	}
 	uiHud->SetScore(score);
@@ -187,7 +180,7 @@ void SceneGame::UpdateGame(float dt)
 		OnPlayerDie(player);
 	}*/
 
-	SetTime(second + 163.f * dt);
+	SetTime(second + 1.f * dt);
 
 	if (GetScore() != 0 && GetScore() % 5000 == 0)
 	{

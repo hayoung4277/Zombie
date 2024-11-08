@@ -44,9 +44,6 @@ protected:
 	std::list<Bullet*> bullets;
 	ObjectPool<Bullet> bulletPool;
 
-	std::list<SpriteGo*> bloods;
-	ObjectPool<SpriteGo> bloodPool;
-
 	sf::Sprite cursor;
 
 	int score = 0;
