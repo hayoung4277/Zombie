@@ -92,20 +92,15 @@ public:
 	sf::FloatRect GetMovableBounds();
 
 	void OnZombieDie(Zombie* zombie);
-	void OnPlayerDie(Player* player);
+	void OnPlayerDie();
 
 	void OnUpgrade(Upgrade up);
 
 	void SetScore(int score);
 	void SetHighScore(int score);
-	void SetHp(int hp);
 	void SetTime(int s);
-	void SetAmmo(int current, int total);
 
 	int GetScore() { return score; }
-	int GetHp() { return hp; }
-
-	void Reload();
 
 	void SaveHighScore();
 };

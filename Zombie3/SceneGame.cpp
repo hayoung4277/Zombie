@@ -54,6 +54,7 @@ void SceneGame::Enter()
 	uiHud->SetWave(wave);
 	uiGameOver->SetActive(false);
 	uiUpgrade->SetActive(false);
+	player->SetUiHud(uiHud);
 
 	Scene::Enter();
 
@@ -177,43 +178,11 @@ void SceneGame::UpdateGame(float dt)
 		wave++;
 	}
 
-	/*if (GetHp() < 0)
-	{
-		OnPlayerDie(player);
-	}*/
-
 	SetTime(second + 1.f * dt);
 
 	if (GetScore() != 0 && GetScore() % 5000 == 0)
 	{
 		SetStatus(Status::Upgrade);
-	}
-
-	shootTimer += dt;
-
-	if (gunAmmo != 0)
-	{
-		if (shootTimer > shootDelay && InputMgr::GetMouseButton(sf::Mouse::Left))
-		{
-			shootTimer = 0.f;
-			player->Shoot();
-			gunAmmo--;
-			gunUseCount++;
-		}
-	}
-
-	if (InputMgr::GetKeyDown(sf::Keyboard::R))
-	{
-		if (gunAmmo == 0)
-		{
-			gunMaxAmmo - gunUseCount;
-			Reload();
-		}
-		else if (gunAmmo != 0)
-		{
-			gunMaxAmmo - gunUseCount;
-			Reload();
-		}
 	}
 }
 
@@ -255,8 +224,6 @@ void SceneGame::SetStatus(Status newStatus)
 		score = 0;
 		SetScore(score);
 		uiGameStart->SetActive(true);
-		gunAmmo = 10;
-		gunMaxAmmo = 200;
 		break;
 
 	case SceneGame::Status::Game:
@@ -269,7 +236,6 @@ void SceneGame::SetStatus(Status newStatus)
 			second = 0;
 
 			SetScore(score);
-			SetAmmo(gunAmmo, gunMaxAmmo);
 			player->Reset();
 		}
 		FRAMEWORK.SetTimeScale(1.f);
@@ -346,7 +312,7 @@ void SceneGame::OnZombieDie(Zombie* zombie)
 	SetHighScore(maxScore);
 }
 
-void SceneGame::OnPlayerDie(Player* player)
+void SceneGame::OnPlayerDie()
 {
 	SetStatus(Status::GameOver);
 }
@@ -369,30 +335,11 @@ void SceneGame::SetHighScore(int score)
 	uiHud->SetHiScore(this->score);
 }
 
-void SceneGame::SetHp(int hp)
-{
-	this->hp = hp;
-	uiHud->SetHp(this->hp, 1.f);
-}
-
 void SceneGame::SetTime(int s)
 {
 	second = s;
 
 	uiHud->SetTime(second);
-}
-
-void SceneGame::SetAmmo(int current, int total)
-{
-	gunAmmo = current;
-	gunMaxAmmo = total;
-
-	uiHud->SetAmmo(gunAmmo, gunMaxAmmo);
-}
-
-void SceneGame::Reload()
-{
-	gunAmmo = 10;
 }
 
 void SceneGame::SaveHighScore()

@@ -3,6 +3,7 @@
 #include "SceneGame.h"
 #include "Bullet.h"
 #include "Zombie.h"
+#include "UiHud.h"
 
 Player::Player(const std::string& name)
 	: GameObject(name)
@@ -59,17 +60,24 @@ void Player::Reset()
 {
 	sceneGame = dynamic_cast<SceneGame*>(SCENE_MGR.GetCurrentScene());
 
+	hp = maxHp = 100;
+	gunAmmo = 7;
+	gunMaxAmmo = 50;
+	reloadTimer = 0;
+
+	invincible = false;
+
 	body.setTexture(TEXTURE_MGR.Get(textureId), true);
 	SetOrigin(originPreset);
 	SetPosition({ 0.f, 0.f });
 	SetRotation(0.f);
 	direction = { 1.f, 0.f };
 
-	//shootTimer = shootDelay;
 
 	sceneGame = dynamic_cast<SceneGame*>(SCENE_MGR.GetCurrentScene());
 	hp = maxHp = 100;
-	//gunAmmo = 50;
+	gunAmmo = 10;
+	gunMaxAmmo = 200;
 
 	invincible = false;
 
@@ -83,6 +91,11 @@ void Player::Reset()
 
 void Player::Update(float dt)
 {
+	if (hp == 0)
+	{
+		return;
+	}
+
 	direction.x = InputMgr::GetAxis(Axis::Horizontal);
 	direction.y = InputMgr::GetAxis(Axis::Vertical);
 	float mag = Utils::Magnitude(direction);
@@ -98,7 +111,7 @@ void Player::Update(float dt)
 	SetRotation(Utils::Angle(look));
 	SetPosition(position + direction * speed * dt);
 
-	/*shootTimer += dt;
+	shootTimer += dt;
 
 	if (gunAmmo != 0)
 	{
@@ -106,24 +119,37 @@ void Player::Update(float dt)
 		{
 			shootTimer = 0.f;
 			Shoot();
-			gunAmmo--;
-			gunUseCount++;
 		}
 	}
 
+	reloadTimer += dt;
+
 	if (InputMgr::GetKeyDown(sf::Keyboard::R))
 	{
-		if (gunAmmo == 0)
+		if(reloadTimer > reloadDelay)
 		{
-			gunMaxAmmo - gunUseCount;
-			Reload();
+			if (gunAmmo == 0)
+			{
+				gunMaxAmmo - gunAmmo;
+				Reload();
+			}
+			else if (gunAmmo != 0)
+			{
+				gunMaxAmmo - gunUseCount;
+				Reload();
+			}
+			reloadTimer = 0;
 		}
-		else if (gunAmmo != 0)
+	}
+
+	if (invincible == true)
+	{
+		invincibleTimer += dt;
+		if (invincibleDelay < invincibleTimer)
 		{
-			gunMaxAmmo - gunUseCount;
-			Reload();
+			invincible = false;
 		}
-	}*/
+	}
 }
 
 void Player::FixedUpdate(float dt)
@@ -131,30 +157,23 @@ void Player::FixedUpdate(float dt)
 	if (sceneGame == nullptr)
 		return;
 
-	const auto& list = sceneGame->GetZombieList();
-	for (auto zombie : list)
+	if (hp == 0)
 	{
-		if (!zombie->IsActive())
-			continue;
-
-		sf::FloatRect bounds = GetGlobalBounds();
-		sf::FloatRect zombieBounds = zombie->GetGlobalBounds();
-
-		if (bounds.intersects(zombieBounds))
-		{
-			HitBox& boxZombie = zombie->GetHitBox();
-			if (Utils::CheckCollision(hitbox, boxZombie))
-			{
-
-			}
-			break;
-		}
+		sceneGame->OnPlayerDie();
 	}
+	
+	uiHud->SetHp(hp, maxHp);
+	uiHud->SetAmmo(gunAmmo, gunMaxAmmo);
 }
 
 void Player::Draw(sf::RenderWindow& window)
 {
 	window.draw(body);
+}
+
+void Player::SetUiHud(UiHud* hud)
+{
+	uiHud = hud;
 }
 
 bool Player::IsShoot()
@@ -164,14 +183,19 @@ bool Player::IsShoot()
 
 void Player::Shoot()
 {
-	Bullet* bullet = sceneGame->TakeBullet();
-	bullet->Fire(position, look, 1000.f, 10);
+	if(gunAmmo > 0)
+	{
+		Bullet* bullet = sceneGame->TakeBullet();
+		bullet->Fire(position, look, 1000.f, 10);
+		gunAmmo--;
+		gunUseCount++;
+	}
 }
 
-//void Player::Reload()
-//{
-//	gunAmmo = 10;
-//}
+void Player::Reload()
+{
+	gunAmmo = 10;
+}
 
 void Player::OnDamage(int d)
 {

@@ -1,6 +1,7 @@
 #pragma once
 
 class SceneGame;
+class UiHud;
 
 class Player : public GameObject
 {
@@ -12,22 +13,27 @@ protected:
 	sf::Vector2f look;
 
 	float speed = 500.f;
-	/*int gunAmmo = 10;
+	int gunAmmo = 10;
 	int gunMaxAmmo = 200;
-	int gunUseCount = 0;*/
+	int gunUseCount = 0;
+
+	float reloadTimer = 0;
+	float reloadDelay = 1.f;
 
 	bool isShoot = false;
 
 	SceneGame* sceneGame;
+	UiHud* uiHud;
 
-	/*float shootDelay = 0.5f;
-	float shootTimer = 0.f;*/
+	float shootDelay = 0.5f;
+	float shootTimer = 0.f;
 
 	int maxHp = 100;
 	int hp = 0;
 
 	bool invincible;
 	float invincibleTimer;
+	float invincibleDelay = 0.5f;
 
 	sf::FloatRect moveableBounds;
 
@@ -51,11 +57,12 @@ public:
 
 	sf::Sprite GetSprite() { return body; }
 
+	void SetUiHud(UiHud* hud);
+
 	bool IsShoot();
 	void Shoot();
-	/*void Reload();*/
-	/*int GetGunAmmo() { return gunAmmo; }
-	int GetGunMaxAmmo() { return gunMaxAmmo; }*/
+	void Reload();
+	
 
 	void OnDamage(int d);
 };

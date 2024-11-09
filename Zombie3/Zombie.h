@@ -55,11 +55,10 @@ public:
 	void Release() override;
 	void Reset() override;
 	void Update(float dt) override;
+	void FixedUpdate(float dt);
 	void Draw(sf::RenderWindow& window) override;
 
 	void SetType(Types type);
 
 	void OnDamage(int damage, float dt);
-
-	void AttackUpdate(float dt);
 };

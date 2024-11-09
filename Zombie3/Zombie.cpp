@@ -89,6 +89,18 @@ void Zombie::Update(float dt)
 	hitbox.UpdateTr(body, GetLocalBounds());
 }
 
+void Zombie::FixedUpdate(float dt)
+{
+	attackTimer += dt;
+	sf::Sprite playerSprite = player->GetSprite();
+
+	if (attackTimer > attackInterval && Utils::CheckCollision(body, playerSprite))
+	{
+		player->OnDamage(damage);
+		attackTimer = 0;
+	}
+}
+
 void Zombie::Draw(sf::RenderWindow& window)
 {
 	window.draw(body);
@@ -104,19 +116,19 @@ void Zombie::SetType(Types type)
 		textureZombieId = "graphics/bloater.png";
 		maxHp = 50;
 		speed = 100.f;
-		damage = 20;
+		damage = 10;
 		break;
 	case Types::Chaser:
 		textureZombieId = "graphics/chaser.png";
 		maxHp = 20;
 		speed = 75.f;
-		damage = 25;
+		damage = 15;
 		break;
 	case Types::Crawler:
 		textureZombieId = "graphics/crawler.png";
 		maxHp = 10;
 		speed = 50.f;
-		damage = 30;
+		damage = 20;
 		break;
 	}
 	body.setTexture(TEXTURE_MGR.Get(textureZombieId), true);
@@ -137,16 +149,5 @@ void Zombie::OnDamage(int d, float dt)
 		{
 			sceneGame->OnZombieDie(this);
 		}*/
-	}
-}
-
-void Zombie::AttackUpdate(float dt)
-{
-	attackTimer += dt;
-	sf::Sprite playerSprite = player->GetSprite();
-	if (attackTimer > attackInterval && Utils::CheckCollision(body, playerSprite))
-	{
-		player->OnDamage(damage);
-		attackTimer = 0;
 	}
 }
