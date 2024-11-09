@@ -171,8 +171,6 @@ void SceneGame::UpdateGame(float dt)
 	uiHud->SetScore(score);
 	uiHud->SetZombieCount(zombies.size());
 	uiHud->SetWave(wave);
-	uiHud->SetHp(hp, maxHp);
-	uiHud->SetAmmo(gunAmmo, gunMaxAmmo);
 	if (zombies.size() == 0) {
 		waveStart = true;
 		wave++;
@@ -331,8 +329,8 @@ void SceneGame::SetScore(int score)
 
 void SceneGame::SetHighScore(int score)
 {
-	this->score = score;
-	uiHud->SetHiScore(this->score);
+	maxScore = score;
+	uiHud->SetHiScore(maxScore);
 }
 
 void SceneGame::SetTime(int s)

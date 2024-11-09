@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "UiUpgrade.h"
 #include "SceneGame.h"
+#include "Player.h"
 
 UiUpgrade::UiUpgrade(const std::string& name)
 	: GameObject(name)

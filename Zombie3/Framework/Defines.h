@@ -33,3 +33,11 @@ enum class Sides
 	Right,
 	None,
 };
+
+static enum class ItemTypes
+{
+	None = -1,
+	Ammo,
+	MediKit,
+	Count,
+};

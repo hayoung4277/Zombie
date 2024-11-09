@@ -136,14 +136,12 @@ void UiHud::SetScore(int s)
 
 void UiHud::SetHiScore(int s)
 {
-	textHighScore.setString("HI SCORE: " + std::to_string(s));
+	textHighScore.setString("HIGH SCORE: " + std::to_string(s));
 	Utils::SetOrigin(textHighScore, Origins::TR);
 }
 
 void UiHud::SetAmmo(int current, int total)
 {
-	current = 10;
-	total = 200;
 	textAmmo.setString(std::to_string(current) + " / " + std::to_string(total) + " (R)");
 	Utils::SetOrigin(textAmmo, Origins::BL);
 }

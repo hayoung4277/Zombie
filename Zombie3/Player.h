@@ -13,8 +13,9 @@ protected:
 	sf::Vector2f look;
 
 	float speed = 500.f;
-	int gunAmmo = 10;
-	int gunMaxAmmo = 200;
+	int clip;
+	int clipSize;
+	int maxAmmo = 100;
 	int gunUseCount = 0;
 
 	float reloadTimer = 0;
@@ -29,7 +30,7 @@ protected:
 	float shootTimer = 0.f;
 
 	int maxHp = 100;
-	int hp = 0;
+	int hp;
 
 	bool invincible;
 	float invincibleTimer;
@@ -59,10 +60,13 @@ public:
 
 	void SetUiHud(UiHud* hud);
 
-	bool IsShoot();
 	void Shoot();
 	void Reload();
 	
-
 	void OnDamage(int d);
+
+	void BufRateOfFire(float rate);
+	void BufClipSize(int size);
+	void BufMaxHp(int hp);
+	void BufSpeed(float speed);
 };

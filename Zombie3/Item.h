@@ -1,30 +1,22 @@
 #pragma once
-
-enum class Upgrade
-{
-	None = -1,
-	RateOfFire,
-	ClipSize,
-	MaxHealth,
-	RunSpeed,
-	HealthPickups,
-	AmmoPickups,
-	Count,
-};
+#include "GameObject.h"
 
 class Player;
 
-class UiUpgrade : public GameObject
+class Item : public GameObject
 {
 protected:
-	std::vector<sf::Text> upgrades;
-	sf::Sprite background;
-
+	sf::Sprite body;
+	std::string texturId;
 	Player* player;
 
+	int ammo, health;
+
+	ItemTypes type;
+
 public:
-	UiUpgrade(const std::string& name = "");
-	~UiUpgrade() = default;
+	Item(const std::string& name = "", const std::string& textureId = "");
+	~Item() = default;
 
 	void SetPosition(const sf::Vector2f& pos) override;
 	void SetRotation(float angle) override;
@@ -37,7 +29,11 @@ public:
 	void Release() override;
 	void Reset() override;
 	void Update(float dt) override;
-	void FixedUpdate(float dt) override;
-
+	void FixedUpdate(float dt)override;
 	void Draw(sf::RenderWindow& window) override;
+
+	//void SetItemManager(ItemManager* address);
+	void Set(ItemTypes type);
+
 };
+

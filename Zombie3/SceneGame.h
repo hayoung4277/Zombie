@@ -48,15 +48,6 @@ protected:
 
 	int score = 0;
 	int maxScore = 0;
-	int hp = 100;
-	int maxHp = 100;
-
-	int gunAmmo = 10;
-	int gunMaxAmmo = 200;
-	int gunUseCount = 0;
-
-	float shootDelay = 0.5f;
-	float shootTimer = 0.f;
 
 	int wave;
 	bool waveStart;

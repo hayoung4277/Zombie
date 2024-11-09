@@ -61,8 +61,9 @@ void Player::Reset()
 	sceneGame = dynamic_cast<SceneGame*>(SCENE_MGR.GetCurrentScene());
 
 	hp = maxHp = 100;
-	gunAmmo = 7;
-	gunMaxAmmo = 50;
+	clip = 7;
+	clipSize = 7;
+	maxAmmo = 100;
 	reloadTimer = 0;
 
 	invincible = false;
@@ -72,14 +73,6 @@ void Player::Reset()
 	SetPosition({ 0.f, 0.f });
 	SetRotation(0.f);
 	direction = { 1.f, 0.f };
-
-
-	sceneGame = dynamic_cast<SceneGame*>(SCENE_MGR.GetCurrentScene());
-	hp = maxHp = 100;
-	gunAmmo = 10;
-	gunMaxAmmo = 200;
-
-	invincible = false;
 
 	moveableBounds = sceneGame->GetMovableBounds();
 	body.setTexture(TEXTURE_MGR.Get(textureId), true);
@@ -113,7 +106,7 @@ void Player::Update(float dt)
 
 	shootTimer += dt;
 
-	if (gunAmmo != 0)
+	if (clip != 0)
 	{
 		if (shootTimer > shootDelay && InputMgr::GetMouseButton(sf::Mouse::Left))
 		{
@@ -128,14 +121,14 @@ void Player::Update(float dt)
 	{
 		if(reloadTimer > reloadDelay)
 		{
-			if (gunAmmo == 0)
+			if (clip == 0)
 			{
-				gunMaxAmmo - gunAmmo;
+				maxAmmo -= clipSize;
 				Reload();
 			}
-			else if (gunAmmo != 0)
+			else if (clip != 0)
 			{
-				gunMaxAmmo - gunUseCount;
+				maxAmmo -= gunUseCount;
 				Reload();
 			}
 			reloadTimer = 0;
@@ -163,7 +156,7 @@ void Player::FixedUpdate(float dt)
 	}
 	
 	uiHud->SetHp(hp, maxHp);
-	uiHud->SetAmmo(gunAmmo, gunMaxAmmo);
+	uiHud->SetAmmo(clip, maxAmmo);
 }
 
 void Player::Draw(sf::RenderWindow& window)
@@ -176,25 +169,27 @@ void Player::SetUiHud(UiHud* hud)
 	uiHud = hud;
 }
 
-bool Player::IsShoot()
-{
-	return isShoot;
-}
-
 void Player::Shoot()
 {
-	if(gunAmmo > 0)
+	if(clip > 0)
 	{
 		Bullet* bullet = sceneGame->TakeBullet();
 		bullet->Fire(position, look, 1000.f, 10);
-		gunAmmo--;
+		clip--;
 		gunUseCount++;
 	}
 }
 
 void Player::Reload()
 {
-	gunAmmo = 10;
+	if(clip == 0)
+	{
+		clip += clipSize;
+	}
+	else if (clip != 0)
+	{
+		clip += gunUseCount;
+	}
 }
 
 void Player::OnDamage(int d)
@@ -205,4 +200,27 @@ void Player::OnDamage(int d)
 		invincible = true;
 		invincibleTimer = 0;
 	}
+}
+
+void Player::BufRateOfFire(float rate)
+{
+	if (shootDelay > 0.05f)
+	{
+		shootDelay -= rate;
+	}
+}
+
+void Player::BufClipSize(int size)
+{
+	clipSize += size;
+}
+
+void Player::BufMaxHp(int hp)
+{
+	maxHp += hp;
+}
+
+void Player::BufSpeed(float speed)
+{
+	this->speed += speed;
 }
