@@ -8,6 +8,8 @@
 #include "UiUpgrade.h"
 #include "UiGameOver.h"
 #include "UiGameStart.h"
+#include "ItemMgr.h"
+#include "Blood.h"
 #include <fstream>
 
 SceneGame::SceneGame()
@@ -23,6 +25,7 @@ void SceneGame::Init()
 	uiUpgrade = AddGo(new UiUpgrade("UiUpgrade"));
 	uiGameOver = AddGo(new UiGameOver("UiGameOver"));
 	uiGameStart = AddGo(new UiGameStart("UiGameStart"));
+	itemMgr = AddGo(new ItemMgr("ItemMgr"));
 	Scene::Init();
 }
 
@@ -44,9 +47,9 @@ void SceneGame::Enter()
 	worldView.setSize(size);
 	worldView.setCenter(0.f, 0.f);
 
-
 	uiView.setSize(size);
 	uiView.setCenter(size.x * 0.5f, size.y * 0.5f);
+	itemMgr->SetActive(true);
 
 	score = 0;
 	wave = 1;
@@ -56,14 +59,11 @@ void SceneGame::Enter()
 	uiUpgrade->SetActive(false);
 	player->SetUiHud(uiHud);
 
-	Scene::Enter();
-
 	zombieSpawnArea = map->GetMapBounds();
+	currentStatus = Status::Awake;
+	beforeStatus = Status::None;
 
-	uiUpgrade->SetActive(false);
-	uiGameOver->SetActive(false);
-
-	SetStatus(Status::Awake);
+	Scene::Enter();
 }
 
 void SceneGame::Exit()
@@ -84,7 +84,50 @@ void SceneGame::Exit()
 	}
 	bullets.clear();
 
+	for (auto blood : bloods)
+	{
+		RemoveGo(blood);
+		bloodPool.Return(blood);
+	}
+	bloods.clear();
+
 	Scene::Exit();
+}
+
+void SceneGame::Reset()
+{
+	score = 0;
+	wave = 1;
+	waveStart = true;
+	beforeStatus = Status::None;
+	currentStatus = Status::Game;
+
+
+	player->Reset();
+	for (auto zombie : zombies) {
+		RemoveGo(zombie);
+		zombiePool.Return(zombie);
+	}
+	zombies.clear();
+
+	for (auto bullet : bullets) {
+		RemoveGo(bullet);
+		bulletPool.Return(bullet);
+	}
+	bullets.clear();
+
+	uiGameOver->SetActive(false);
+	uiUpgrade->SetActive(false);
+	sf::Vector2f size = FRAMEWORK.GetWindowSizeF();
+	worldView.setSize(size);
+	worldView.setCenter(0.f, 0.f);
+
+	uiView.setSize(size);
+	uiView.setCenter(size.x * 0.5f, size.y * 0.5f);
+	itemMgr->ResetSpawn();
+	itemMgr->SetSpawn(true);
+
+	uiHud->SetWave(wave);
 }
 
 void SceneGame::Update(float dt)
@@ -124,9 +167,33 @@ void SceneGame::Update(float dt)
 		UpdateAwake(dt);
 		break;
 	case SceneGame::Status::Game:
+		if (beforeStatus == Status::Upgrade)
+		{
+			uiHud->SetWave(wave);
+			waveStart = true;
+			bufSelected = false;
+			uiUpgrade->SetActive(false);
+			beforeStatus = Status::None;
+		}
 		UpdateGame(dt);
 		break;
 	case SceneGame::Status::Upgrade:
+		FRAMEWORK.SetTimeScale(0.f);
+		
+		if (beforeStatus == Status::Game)
+		{
+			bufSelected = false;
+			uiUpgrade->SetActive(true);
+			beforeStatus = Status::None;
+		}
+		if (bufSelected == true)
+		{
+			bufSelected = false;
+			uiUpgrade->SetActive(false);
+			itemMgr->ResetSpawn();
+			beforeStatus = Status::Upgrade;
+			currentStatus = Status::Game;
+		}
 		UpdateUpgrade(dt);
 		break;
 	case SceneGame::Status::GameOver:
@@ -150,9 +217,15 @@ void SceneGame::Draw(sf::RenderWindow& window)
 
 void SceneGame::UpdateAwake(float dt)
 {
+	FRAMEWORK.SetTimeScale(0.f);
+	score = 0;
+	SetScore(score);
+	uiGameStart->SetActive(true);
+
 	if (InputMgr::GetKeyDown(sf::Keyboard::Enter))
 	{
-		SetStatus(Status::Game);
+		beforeStatus = Status::Awake;
+		currentStatus = Status::Game;
 	}
 }
 
@@ -160,9 +233,23 @@ void SceneGame::UpdateGame(float dt)
 {
 	if (InputMgr::GetKeyDown(sf::Keyboard::Escape))
 	{
-		SetStatus(Status::Pause);
+		currentStatus = Status::Pause;
+		beforeStatus = Status::Game;
 		return;
 	}
+
+	uiGameStart->SetActive(false);
+	uiUpgrade->SetActive(false);
+	uiGameOver->SetActive(false);
+	if (beforeStatus == Status::GameOver)
+	{
+		score = 0;
+		second = 0;
+
+		SetScore(score);
+		player->Reset();
+	}
+	FRAMEWORK.SetTimeScale(1.f);
 
 	if (waveStart == true) {
 		SpawnZombies(10 + 10 * wave);
@@ -176,82 +263,43 @@ void SceneGame::UpdateGame(float dt)
 		wave++;
 	}
 
-	SetTime(second + 1.f * dt);
-
-	if (GetScore() != 0 && GetScore() % 5000 == 0)
+	if (GetScore() != 0 && GetScore() % 1000 == 0)
 	{
-		SetStatus(Status::Upgrade);
+		currentStatus = Status::Upgrade;
+		beforeStatus = Status::Game;
 	}
 }
 
 void SceneGame::UpdateUpgrade(float dt)
 {
-	if (beforeStatus == Status::Game)
+	if (beforeStatus == Status::Game && InputMgr::GetMouseButtonDown(sf::Mouse::Left))
 	{
-		uiUpgrade->SetActive(true);
-		beforeStatus == Status::None;
+		currentStatus = Status::Game;
+		beforeStatus = Status::Upgrade;
 	}
 }
 
 void SceneGame::UpdateGameOver(float dt)
 {
+	FRAMEWORK.SetTimeScale(0.f);
+	uiGameOver->SetActive(true);
+
 	if (InputMgr::GetKeyDown(sf::Keyboard::Enter))
 	{
-		SetStatus(Status::Game);
+		currentStatus = Status::Game;
+		beforeStatus = Status::GameOver;
 	}
 	SaveHighScore();
 }
 
 void SceneGame::UpdatePause(float dt)
 {
+	FRAMEWORK.SetTimeScale(0.f);
+
 	if (InputMgr::GetKeyDown(sf::Keyboard::Escape))
 	{
-		SetStatus(Status::Game);
-	}
-}
-
-void SceneGame::SetStatus(Status newStatus)
-{
-	Status prevStatus = currentStatus;
-	currentStatus = newStatus;
-
-	switch (currentStatus)
-	{
-	case SceneGame::Status::Awake:
-		FRAMEWORK.SetTimeScale(0.f);
-		score = 0;
-		SetScore(score);
-		uiGameStart->SetActive(true);
-		break;
-
-	case SceneGame::Status::Game:
-		uiGameStart->SetActive(false);
-		uiUpgrade->SetActive(false);
-		uiGameOver->SetActive(false);
-		if (prevStatus == Status::GameOver)
-		{
-			score = 0;
-			second = 0;
-
-			SetScore(score);
-			player->Reset();
-		}
-		FRAMEWORK.SetTimeScale(1.f);
-		break;
-
-	case SceneGame::Status::Upgrade:
-		FRAMEWORK.SetTimeScale(0.f);
-		uiUpgrade->SetActive(true);
-		break;
-
-	case SceneGame::Status::GameOver:
-		FRAMEWORK.SetTimeScale(0.f);
-		uiGameOver->SetActive(true);
-		break;
-
-	case SceneGame::Status::Pause:
-		FRAMEWORK.SetTimeScale(0.f);
-		break;
+		currentStatus = Status::Game;
+		beforeStatus = Status::Pause;
 	}
 }
 
@@ -262,13 +310,18 @@ void SceneGame::SpawnZombies(int count)
 		Zombie* zombie = zombiePool.Take();
 		zombies.push_back(zombie);
 
-		Zombie::Types zombieType = (Zombie::Types)Utils::RandomRange(0, Zombie::TotalTypes - 1);
+		AddGo(zombie);
+
+		zombie->SetType((Zombie::Types)Utils::RandomRange(0, Zombie::TotalTypes - 1));
+		auto tilebounds = map->GetGlobalBounds();
+		zombie->SetPosition({ Utils::RandomRange(tilebounds.left, tilebounds.left + tilebounds.width), Utils::RandomRange(tilebounds.top, tilebounds.top + tilebounds.height) });
+		
+		/*Zombie::Types zombieType = (Zombie::Types)Utils::RandomRange(0, Zombie::TotalTypes - 1);
 		zombie->SetType(zombieType);
 
 		sf::Vector2f pos = Utils::RandomPointInRect(zombieSpawnArea);
-		zombie->SetPosition(pos);
+		zombie->SetPosition(pos);*/
 
-		AddGo(zombie);
 	}
 }
 
@@ -299,6 +352,7 @@ sf::FloatRect SceneGame::GetMovableBounds()
 
 void SceneGame::OnZombieDie(Zombie* zombie)
 {
+	OnZombieBlood(zombie);
 	RemoveGo(zombie);
 	zombiePool.Return(zombie);
 	zombies.remove(zombie);
@@ -312,13 +366,8 @@ void SceneGame::OnZombieDie(Zombie* zombie)
 
 void SceneGame::OnPlayerDie()
 {
-	SetStatus(Status::GameOver);
-}
-
-void SceneGame::OnUpgrade(Upgrade up)
-{
-	uiUpgrade->SetActive(false);
-	std::cout << (int)up << std::endl;
+	currentStatus = Status::GameOver;
+	beforeStatus = Status::Game;
 }
 
 void SceneGame::SetScore(int score)
@@ -333,11 +382,9 @@ void SceneGame::SetHighScore(int score)
 	uiHud->SetHiScore(maxScore);
 }
 
-void SceneGame::SetTime(int s)
+void SceneGame::BufSelected()
 {
-	second = s;
-
-	uiHud->SetTime(second);
+	bufSelected = true;
 }
 
 void SceneGame::SaveHighScore()
@@ -351,4 +398,59 @@ void SceneGame::SaveHighScore()
 
 	is.write((char*)maxScore, sizeof(maxScore));
 	is.close();*/
+}
+
+void SceneGame::ReturnBlood(Blood* blood)
+{
+	RemoveGo(blood);
+	bloodPool.Return(blood);
+	bloods.remove(blood);
+}
+
+void SceneGame::OnZombieBlood(Zombie* zombie)
+{
+	Blood* blood = bloodPool.Take();
+	bloods.push_back(blood);
+
+	sf::Vector2f pos = zombie->GetPosition();
+	blood->SetPosition(pos);
+
+	AddGo(blood);
+}
+
+void SceneGame::UpgradeInfo(int i)
+{
+	switch (i)
+	{
+	case 0:
+	{
+		player->BufRateOfFire(0.02f);
+		break;
+	}
+	case 1:
+	{
+		player->BufClipSize(100);
+		break;
+	}
+	case 2:
+	{
+		player->BufMaxHp(50);
+		break;
+	}
+	case 3:
+		player->BufSpeed(20.f);
+		break;
+	case 4:
+		itemMgr->BufMedRegen(1);
+		break;
+	case 5:
+		itemMgr->BufAmmoRegen(1);
+		break;
+	}
+
+	if(InputMgr::GetMouseButtonDown(sf::Mouse::Left))
+	{
+		beforeStatus = Status::Upgrade;
+		currentStatus = Status::Game;
+	}
 }

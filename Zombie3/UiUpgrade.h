@@ -1,26 +1,17 @@
 #pragma once
 
-enum class Upgrade
-{
-	None = -1,
-	RateOfFire,
-	ClipSize,
-	MaxHealth,
-	RunSpeed,
-	HealthPickups,
-	AmmoPickups,
-	Count,
-};
-
 class Player;
+class ItemMgr;
 
 class UiUpgrade : public GameObject
 {
+
 protected:
-	std::vector<sf::Text> upgrades;
+	std::vector<sf::Text> text;
 	sf::Sprite background;
 
 	Player* player;
+	ItemMgr* itemMgr;
 
 public:
 	UiUpgrade(const std::string& name = "");
@@ -37,7 +28,7 @@ public:
 	void Release() override;
 	void Reset() override;
 	void Update(float dt) override;
-	void FixedUpdate(float dt) override;
+	void CheckTextClick();
 
 	void Draw(sf::RenderWindow& window) override;
 };

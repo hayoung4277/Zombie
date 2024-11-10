@@ -2,6 +2,7 @@
 #include "UiUpgrade.h"
 #include "SceneGame.h"
 #include "Player.h"
+#include "ItemMgr.h"
 
 UiUpgrade::UiUpgrade(const std::string& name)
 	: GameObject(name)
@@ -40,15 +41,28 @@ void UiUpgrade::SetOrigin(const sf::Vector2f& newOrigin)
 void UiUpgrade::Init()
 {
 	sortingLayer = SortingLayers::UI;
-	sortingOrder = 1;
-	
-	upgrades.resize((int)Upgrade::Count);
-	upgrades[0].setString("1-INCREASED RATE OF FIRE");
-	upgrades[1].setString("2-INCREASED CLIP SIZE(NEXT RELOAD)");
-	upgrades[2].setString("3-INCREASED MAX HEALTH");
-	upgrades[3].setString("4-INCREASED RUN SPEED");
-	upgrades[4].setString("5-MORE AND BETTER HEALTH PICKUPS");
-	upgrades[5].setString("6-MORE AND BETTER AMMO PICKUPS");
+	sortingOrder = 0;
+	float textSize = 80.f;
+	sf::Font& font = FONT_MGR.Get("fonts/zombiecontrol.ttf");
+	sf::Vector2f pos({ 300.f, 200.f });
+	for (int i = 0; i < 6; i++) {
+		sf::Text temp;
+		text.push_back(temp);
+	}
+	text[0].setString("1- INCREASED RATE OF FIRE");
+	text[1].setString("2- INCREASED CLIP SIZE(NEXT RELOAD)");
+	text[2].setString("3- INCREASED MAXM HEALTH");
+	text[3].setString("4- INCREASED RUN SPEED");
+	text[4].setString("5- MORE AND BETTER HEALTH PICKUPS");
+	text[5].setString("6- MORE AND BETTER AMMO PICUPS");
+	for (auto& it : text) {
+		it.setFont(font);
+		it.setPosition(pos);
+		it.setCharacterSize(textSize);
+		it.setFillColor(sf::Color::White);
+		pos.y += 100;
+	}
+	background.setTexture(TEXTURE_MGR.Get("graphics/background.png"));
 }
 
 void UiUpgrade::Release()
@@ -57,57 +71,43 @@ void UiUpgrade::Release()
 
 void UiUpgrade::Reset()
 {
-	background.setTexture(TEXTURE_MGR.Get("graphics/background.png"));
-	background.setPosition({ 0.f, 0.f });
-
-	float textSize = 100.f;
-	sf::Font& font = FONT_MGR.Get("fonts/zombiecontrol.ttf");
-
-	int count = (int)Upgrade::Count;
-	for (int i = 0; i < count; ++i)
-	{
-		upgrades[i].setFont(font);
-		upgrades[i].setCharacterSize(textSize);
-		Utils::SetOrigin(upgrades[i], Origins::ML);
-		upgrades[i].setPosition(200.f, (120.f * i + 1) + 200.f);
-	}
 }
 
 void UiUpgrade::Update(float dt)
 {
-	
+	CheckTextClick();
 }
 
-void UiUpgrade::FixedUpdate(float dt)
+void UiUpgrade::CheckTextClick()
 {
 	SceneGame* sceneGame = dynamic_cast<SceneGame*>(SCENE_MGR.GetCurrentScene());
 	if (sceneGame != nullptr)
 	{
 		sf::Vector2f mousePos = sceneGame->ScreenToUi(InputMgr::GetMousePosition());
-		for (int i = 0; i < upgrades.size(); ++i)
+		for (int i = 0; i < text.size(); ++i)
 		{
-			if (upgrades[i].getGlobalBounds().contains(mousePos))
+			if (text[i].getGlobalBounds().contains(mousePos))
 			{
-				upgrades[i].setFillColor(sf::Color::Red);
+				text[i].setFillColor(sf::Color::Red);
 				if (InputMgr::GetMouseButtonDown(sf::Mouse::Left))
 				{
-					sceneGame->OnUpgrade((Upgrade)i);
+					sceneGame->UpgradeInfo(i);
+					SetActive(false);
 					return;
 				}
 			}
 			else
 			{
-				upgrades[i].setFillColor(sf::Color::White);
+				text[i].setFillColor(sf::Color::White);
 			}
 		}
 	}
-
 }
 
 void UiUpgrade::Draw(sf::RenderWindow& window)
 {
 	window.draw(background);
-	for (auto& text : upgrades)
+	for (auto& text : text)
 	{
 		window.draw(text);
 	}

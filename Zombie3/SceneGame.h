@@ -11,7 +11,8 @@ class UiUpgrade;
 class UiGameStart;
 class UiGameOver;
 class SpriteGo;
-enum class Upgrade;
+class ItemMgr;
+class Blood;
 
 class SceneGame : public Scene
 {
@@ -36,6 +37,7 @@ protected:
 	UiUpgrade* uiUpgrade;
 	UiGameOver* uiGameOver;
 	UiGameStart* uiGameStart;
+	ItemMgr* itemMgr;
 
 	std::list<Zombie*> zombies;
 	ObjectPool<Zombie> zombiePool;
@@ -44,6 +46,9 @@ protected:
 	std::list<Bullet*> bullets;
 	ObjectPool<Bullet> bulletPool;
 
+	std::list<Blood*> bloods;
+	ObjectPool<Blood> bloodPool;
+
 	sf::Sprite cursor;
 
 	int score = 0;
@@ -51,6 +56,7 @@ protected:
 
 	int wave;
 	bool waveStart;
+	bool bufSelected = false;
 
 	int second = 0;
 
@@ -62,6 +68,7 @@ public:
 	void Release();
 	void Enter();
 	void Exit();
+	void Reset();
 	void Update(float dt);
 	void Draw(sf::RenderWindow& window) override;
 
@@ -70,8 +77,6 @@ public:
 	void UpdateUpgrade(float dt);
 	void UpdateGameOver(float dt);
 	void UpdatePause(float dt);
-
-	void SetStatus(Status newStatus);
 
 	void SpawnZombies(int count);
 	Bullet* TakeBullet();
@@ -85,13 +90,16 @@ public:
 	void OnZombieDie(Zombie* zombie);
 	void OnPlayerDie();
 
-	void OnUpgrade(Upgrade up);
-
 	void SetScore(int score);
 	void SetHighScore(int score);
-	void SetTime(int s);
 
 	int GetScore() { return score; }
+	void BufSelected();
 
 	void SaveHighScore();
+
+	void ReturnBlood(Blood* blood);
+	void OnZombieBlood(Zombie* zombie);
+
+	void UpgradeInfo(int i);
 };

@@ -2,6 +2,7 @@
 
 class SceneGame;
 class UiHud;
+class Item;
 
 class Player : public GameObject
 {
@@ -12,7 +13,7 @@ protected:
 	sf::Vector2f direction;
 	sf::Vector2f look;
 
-	float speed = 500.f;
+	float speed = 300.f;
 	int clip;
 	int clipSize;
 	int maxAmmo = 100;
@@ -64,6 +65,8 @@ public:
 	void Reload();
 	
 	void OnDamage(int d);
+
+	void OnItemGet(ItemTypes type, int amount);
 
 	void BufRateOfFire(float rate);
 	void BufClipSize(int size);

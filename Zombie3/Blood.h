@@ -1,24 +1,19 @@
 #pragma once
-#include "GameObject.h"
 
-class Player;
-class ItemMgr;
+class SceneGame;
 
-class Item : public GameObject
+class Blood : public GameObject
 {
 protected:
 	sf::Sprite body;
-	std::string textureId;
-	Player* player;
+	std::string textureId = "graphics/blood.png";
 
-	int ammo, health;
+	SceneGame* scene;
 
-	ItemTypes type;
-	ItemMgr* itemMgr;
-
+	float showTime = 0.f;
 public:
-	Item(const std::string& name = "", const std::string& textureId = "");
-	~Item() = default;
+	Blood(const std::string& name = "");
+	~Blood() = default;
 
 	void SetPosition(const sf::Vector2f& pos) override;
 	void SetRotation(float angle) override;
@@ -31,11 +26,5 @@ public:
 	void Release() override;
 	void Reset() override;
 	void Update(float dt) override;
-	void FixedUpdate(float dt)override;
 	void Draw(sf::RenderWindow& window) override;
-
-	void SetItemManager(ItemMgr* address);
-	void Set(ItemTypes type);
-
 };
-

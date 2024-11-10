@@ -4,6 +4,7 @@
 #include "Bullet.h"
 #include "Zombie.h"
 #include "UiHud.h"
+#include "Item.h"
 
 Player::Player(const std::string& name)
 	: GameObject(name)
@@ -178,6 +179,10 @@ void Player::Shoot()
 		clip--;
 		gunUseCount++;
 	}
+	if (clip == 0)
+	{
+
+	}
 }
 
 void Player::Reload()
@@ -188,7 +193,8 @@ void Player::Reload()
 	}
 	else if (clip != 0)
 	{
-		clip += gunUseCount;
+		//clip += gunUseCount;
+		clip = Utils::Clamp(clip + gunUseCount, 0, clipSize);
 	}
 }
 
@@ -199,6 +205,19 @@ void Player::OnDamage(int d)
 		hp = Utils::Clamp(hp - d, 0, maxHp);
 		invincible = true;
 		invincibleTimer = 0;
+	}
+}
+
+void Player::OnItemGet(ItemTypes type, int amount)
+{
+	switch (type)
+	{
+	case ItemTypes::Ammo:
+		maxAmmo += amount;
+		break;
+	case ItemTypes::MediKit:
+		hp = Utils::Clamp(hp += amount, 0, maxHp);
+		break;
 	}
 }
 

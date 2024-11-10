@@ -41,6 +41,8 @@ public:
 	Zombie(const std::string& name = "");
 	~Zombie() = default;
 
+	sf::Sprite GetSprite() { return body; }
+
 	void SetPosition(const sf::Vector2f& pos) override;
 	void SetRotation(float angle) override;
 	void SetScale(const sf::Vector2f& scale) override;
@@ -60,5 +62,5 @@ public:
 
 	void SetType(Types type);
 
-	void OnDamage(int damage, float dt);
+	void OnDamage(int damage);
 };

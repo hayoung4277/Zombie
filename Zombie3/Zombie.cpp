@@ -79,25 +79,33 @@ void Zombie::Reset()
 
 void Zombie::Update(float dt)
 {
-	if (player != nullptr && Utils::Distance(position, player->GetPosition()) > 10)
-	{
-		direction = Utils::GetNormal(player->GetPosition() - position);
+	sf::Vector2f playerPos = player->GetPosition();
+	direction = Utils::GetNormal(playerPos - position);
+	if (player != nullptr && Utils::Distance(playerPos, position) > 20.f) {
+		position += direction * speed * dt;
 		SetRotation(Utils::Angle(direction));
-		SetPosition(position + direction * speed * dt);
+		SetPosition(position);
 	}
-
-	hitbox.UpdateTr(body, GetLocalBounds());
 }
 
 void Zombie::FixedUpdate(float dt)
 {
-	attackTimer += dt;
+	if (sceneGame == nullptr)
+		return;
+
+	if (!player->IsActive())
+		return;
+
 	sf::Sprite playerSprite = player->GetSprite();
 
 	if (attackTimer > attackInterval && Utils::CheckCollision(body, playerSprite))
 	{
-		player->OnDamage(damage);
-		attackTimer = 0;
+		if (attackTimer > attackInterval)
+		{
+			player->OnDamage(damage);
+			attackTimer = 0.f;
+		}
+		attackTimer += dt;
 	}
 }
 
@@ -135,19 +143,11 @@ void Zombie::SetType(Types type)
 	hp = maxHp;
 }
 
-void Zombie::OnDamage(int d, float dt)
+void Zombie::OnDamage(int d)
 {
 	hp -= d;
 	if (hp <= 0 && sceneGame != nullptr)
 	{
 		sceneGame->OnZombieDie(this);
-
-		/*body.setTexture(TEXTURE_MGR.Get(textureBloodId));
-		bloodTimer = 0;
-		bloodTimer += dt;
-		if(bloodTimer > bloodDuration)
-		{
-			sceneGame->OnZombieDie(this);
-		}*/
 	}
 }

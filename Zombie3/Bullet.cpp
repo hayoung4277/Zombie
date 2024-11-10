@@ -81,14 +81,11 @@ void Bullet::Reset()
 void Bullet::Update(float dt)
 {
 	SetPosition(position + direction * speed * dt);
-
-	hitbox.UpdateTr(body, GetLocalBounds());
 }
 
 void Bullet::FixedUpdate(float dt)
 {
-	if (sceneGame == nullptr)
-		return;
+	if (!sceneGame)return;
 
 	const auto& list = sceneGame->GetZombieList();
 	for (auto zombie : list)
@@ -98,15 +95,10 @@ void Bullet::FixedUpdate(float dt)
 
 		sf::FloatRect bounds = GetGlobalBounds();
 		sf::FloatRect zombieBounds = zombie->GetGlobalBounds();
-
 		if (bounds.intersects(zombieBounds))
 		{
-			HitBox& boxZombie = zombie->GetHitBox();
-			if (Utils::CheckCollision(hitbox, boxZombie))
-			{
-				zombie->OnDamage(damage, dt);
-				sceneGame->ReturnBullet(this);
-			}
+			zombie->OnDamage(damage);
+			sceneGame->ReturnBullet(this);
 			break;
 		}
 	}
